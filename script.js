@@ -9,7 +9,36 @@ const charCount = document.querySelector("#char-count");
 const searchInput = document.querySelector("#search-input");
 const clearAllButton = document.querySelector("#clear-all-button");
 
-let notes = [];
+const STORAGE_KEY = "quicknotes-notes-v1";
+
+function loadNotes() {
+  try {
+    const savedNotes = JSON.parse(localStorage.getItem(STORAGE_KEY) || "[]");
+    return Array.isArray(savedNotes)
+      ? savedNotes.filter((note) =>
+          note &&
+          typeof note.id === "string" &&
+          typeof note.text === "string" &&
+          typeof note.createdAt === "string" &&
+          Object.prototype.hasOwnProperty.call(categoryNames, note.category)
+        )
+      : [];
+  } catch (error) {
+    console.warn("Saved notes could not be loaded.", error);
+    return [];
+  }
+}
+
+let notes = loadNotes();
+
+function saveNotes() {
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(notes));
+  } catch (error) {
+    errorMessage.textContent = "Your browser couldn't save notes. Check available storage space or privacy settings.";
+    console.warn("Notes could not be saved.", error);
+  }
+}
 
 const categoryNames = {
   personal: "Personal",
@@ -78,11 +107,13 @@ function addNote(text, category) {
     category,
     createdAt: new Date().toISOString()
   });
+  saveNotes();
   renderNotes();
 }
 
 function deleteNote(id) {
   notes = notes.filter((note) => note.id !== id);
+  saveNotes();
   renderNotes();
 }
 
@@ -116,6 +147,7 @@ searchInput.addEventListener("input", renderNotes);
 clearAllButton.addEventListener("click", () => {
   if (confirm("Delete all notes?")) {
     notes = [];
+    saveNotes();
     renderNotes();
   }
 });
