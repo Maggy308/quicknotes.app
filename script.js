@@ -144,6 +144,14 @@ noteForm.addEventListener("submit", (event) => {
 
 searchInput.addEventListener("input", renderNotes);
 
+// Make the search field easy to reach from the keyboard.
+document.addEventListener("keydown", (event) => {
+  if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === "k") {
+    event.preventDefault();
+    searchInput.focus();
+  }
+});
+
 clearAllButton.addEventListener("click", () => {
   if (confirm("Delete all notes?")) {
     notes = [];
